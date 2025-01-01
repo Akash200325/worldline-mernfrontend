@@ -1,12 +1,14 @@
 pipeline {
     agent any
+
     tools {
-        nodejs 'nodejs' // Name of the Node.js installation in Jenkins
+        nodejs 'nodejs' // Jenkins Node.js installation
     }
 
     environment {
-        NODEJS_HOME = 'C:\\Program Files\\nodejs\\'  // Set the Node.js path
+        NODEJS_HOME = 'C:\\Program Files\\nodejs\\'  // Path to Node.js installation
         SONAR_SCANNER_PATH = 'C:\\Users\\akash\\Downloads\\sonar-scanner-cli-6.2.1.4610-windows-x64\\sonar-scanner-6.2.1.4610-windows-x64\\bin'
+        PATH = "${env.NODEJS_HOME};${env.SONAR_SCANNER_PATH};${env.PATH}"
     }
 
     stages {
@@ -18,43 +20,37 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat '''
-                set PATH=%NODEJS_HOME%;%PATH%
-                npm install
-                '''
+                bat 'npm install'
             }
         }
 
-        stage('Lint') {
-            steps {
-                bat '''
-                set PATH=%NODEJS_HOME%;%PATH%
-                npm run lint
-                '''
-            }
-        }
+        stage('Quality Checks') {
+            parallel {
+                stage('Lint') {
+                    steps {
+                        bat 'npm run lint'
+                    }
+                }
 
-        stage('Build') {
-            steps {
-                bat '''
-                set PATH=%NODEJS_HOME%;%PATH%
-                npm run build
-                '''
+                stage('Build') {
+                    steps {
+                        bat 'npm run build'
+                    }
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             environment {
-                SONAR_TOKEN = credentials('sonar-token') // Accessing the SonarQube token stored in Jenkins credentials
+                SONAR_TOKEN = credentials('sonar-token') // Jenkins credential for SonarQube token
             }
             steps {
                 bat '''
-                set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                where sonar-scanner || echo "SonarQube scanner not found. Please install it."    
-               sonar-scanner -Dsonar.projectKey=mernfrontend ^
+                where sonar-scanner || (echo "SonarQube scanner not found" && exit /b 1)
+                sonar-scanner -Dsonar.projectKey=mernfrontend ^
                               -Dsonar.sources=. ^
                               -Dsonar.host.url=http://localhost:9000 ^
-                              -Dsonar.token=%SONAR_TOKEN%
+                              -Dsonar.login=%SONAR_TOKEN%
                 '''
             }
         }
@@ -62,13 +58,14 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully'
+            echo 'Pipeline completed successfully. Build and quality checks passed.'
         }
         failure {
-            echo 'Pipeline failed'
+            echo 'Pipeline failed. Review logs to identify the issue.'
         }
         always {
-            echo 'This runs regardless of the result.'
+            archiveArtifacts artifacts: '**/build/**/*', allowEmptyArchive: true
+            echo 'Build artifacts archived.'
         }
     }
 }
