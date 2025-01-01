@@ -58,7 +58,7 @@ pipeline {
                     sonar-scanner -Dsonar.projectKey=mernfrontend ^
                                   -Dsonar.sources=. ^
                                   -Dsonar.host.url=http://localhost:9000 ^
-                                  -Dsonar.login=${env.SONAR_TOKEN}
+                                  -Dsonar.token=sqp_d16a74c8794496a311f2cfd82768e8e27e9bfb63
                     """
                     bat scannerCommand
                 }
