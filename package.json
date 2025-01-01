@@ -16,14 +16,14 @@
     "react-router-dom": "^6.28.0",
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4",
-    "eslint": "^8.0.0"  // Ensure ESLint is installed
+    "eslint": "^8.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx" // Added lint script
+    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
   "eslintConfig": {
     "extends": [
