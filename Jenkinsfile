@@ -49,17 +49,20 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_TOKEN = credentials('sonar-token') // Accessing the SonarQube token stored in Jenkins credentials
-            }
-            steps {
-                bat """
-                set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                where sonar-scanner || echo "SonarQube scanner not found. Please install it."
-                sonar-scanner -Dsonar.projectKey=mernfrontend -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000 -Dsonar.token=${SONAR_TOKEN}
-                """
-            }
+    environment {
+        SONAR_TOKEN = credentials('sonar-token') // Accessing the SonarQube token stored in Jenkins credentials
+    }
+    steps {
+        script {
+            echo "Verifying SonarQube server access..."
+            bat "curl -u ${SONAR_TOKEN}: http://localhost:9000/api/system/status || exit 1"
         }
+        bat """
+        set PATH=%SONAR_SCANNER_PATH%;%PATH%
+        sonar-scanner -Dsonar.projectKey=mernfrontend -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000 -Dsonar.token=${SONAR_TOKEN}
+        """
+    }
+}
     }
 
     post {
