@@ -47,7 +47,11 @@ pipeline {
                 '''
             }
         }
-
+        stage('Test SonarQube Connection') {
+    steps {
+        bat "curl -u ${env.SONAR_TOKEN}: http://localhost:9000/api/system/status"
+    }
+}
         stage('SonarQube Analysis') {
     environment {
         SONAR_TOKEN = credentials('sonar-token') // Accessing the SonarQube token stored in Jenkins credentials
