@@ -1,33 +1,34 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'nodejs' // Configure your NodeJS installation in Jenkins
+    }
+
     environment {
-        GIT_HOME = tool name: 'Git', type: 'GitTool'  // Use the correct Git installation on Jenkins
+        SONARQUBE_SERVER = 'sonarqube' // Replace with your SonarQube server configuration name
     }
 
     stages {
-        stage('Declarative: Checkout SCM') {
+        stage('Cleanup') {
             steps {
-                // Checkout the code from GitHub repository
-                checkout scm
+                cleanWs()
             }
         }
 
-        stage('Tool Install') {
+        stage('Checkout') {
             steps {
-                // Install necessary tools, like Node.js or other dependencies if needed
-                script {
-                    // Ensure Node.js is installed, or adjust for the tools you require
-                    sh 'node -v'
+                retry(3) {
+                    git branch: 'main', 
+                        credentialsId: 'akashkrao4@gmail.com/****** (git)', 
+                        url: 'https://github.com/Akash200325/worldline-mernfrontend.git'
                 }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Install project dependencies (e.g., npm install for a Node.js project)
                 script {
-                    // Ensure npm is installed or use the package manager relevant to your project
                     sh 'npm install'
                 }
             }
@@ -35,7 +36,6 @@ pipeline {
 
         stage('Lint') {
             steps {
-                // Lint the code if you have linting setup
                 script {
                     sh 'npm run lint'
                 }
@@ -44,7 +44,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Build the application (e.g., build command for a React or Angular app)
                 script {
                     sh 'npm run build'
                 }
@@ -53,29 +52,26 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                // Run SonarQube analysis for code quality (if you have SonarQube setup)
-                script {
-                    sh 'mvn sonar:sonar'
-                }
-            }
-        }
-
-        stage('Post Actions') {
-            steps {
-                echo 'Pipeline finished'
+                bat '''
+                set PATH=%SONAR_SCANNER_PATH%;%PATH%
+                sonar-scanner -Dsonar.projectKey=mernstackfrontend ^
+                              -Dsonar.sources=. ^
+                              -Dsonar.host.url=http://localhost:9000 ^
+                              -Dsonar.token=sqp_70213d5076238bc4f6ede8212afa725da7fcd5d2
+                '''
             }
         }
     }
 
     post {
         always {
-            cleanWs()  // Cleanup workspace after pipeline completion
+            echo 'This runs regardless of the pipeline result.'
         }
         success {
-            echo 'Pipeline was successful!'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed.'
         }
     }
 }
