@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'nodejs' // Assuming nodejs is installed and configured in Jenkins tool config
+        nodejs 'Nodejs' // Assuming nodejs is installed and configured in Jenkins tool config
     }
 
     environment {
@@ -22,7 +22,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'npm install'  // Use 'bat' for Windows batch execution
+                bat 'npm ci'  // Use npm ci to install dependencies from package-lock.json
             }
         }
 
