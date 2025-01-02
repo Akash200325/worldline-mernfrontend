@@ -20,7 +20,7 @@ pipeline {
             steps {
                 retry(3) {
                     git branch: 'main', 
-                        credentialsId: 'akashkrao4@gmail.com/****** (git)', 
+                        credentialsId: 'java-maven', 
                         url: 'https://github.com/Akash200325/worldline-mernfrontend.git'
                 }
             }
