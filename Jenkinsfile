@@ -10,9 +10,19 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Checkout') {
             steps {
-                git 'https://github.com/Akash200325/worldline-mernfrontend.git'
+                retry(3) {
+                    git branch: 'main', 
+                        credentialsId: 'your-credentials-id', 
+                        url: 'https://github.com/Akash200325/worldline-mernfrontend.git'
+                }
             }
         }
 
@@ -41,17 +51,9 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            when {
-                not {
-                    anyOf {
-                        branch 'master'; // Ensure it doesn't skip analysis for specific conditions
-                    }
-                }
-            }
             steps {
                 bat '''
                 set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                where sonar-scanner || echo "SonarQube scanner not found. Please install it."
                 sonar-scanner -Dsonar.projectKey=mernstackfrontend ^
                               -Dsonar.sources=. ^
                               -Dsonar.host.url=http://localhost:9000 ^
