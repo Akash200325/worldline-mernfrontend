@@ -44,19 +44,18 @@ pipeline {
             when {
                 not {
                     anyOf {
-                        failed();
-                        aborted();
+                        branch 'master'; // Ensure it doesn't skip analysis for specific conditions
                     }
                 }
             }
-             steps {
+            steps {
                 bat '''
                 set PATH=%SONAR_SCANNER_PATH%;%PATH%
                 where sonar-scanner || echo "SonarQube scanner not found. Please install it."
-               sonar-scanner -Dsonar.projectKey=mernstackfrontend 
-                             -Dsonar.sources=.  
-                             -Dsonar.host.url=http://localhost:9000  
-                             -Dsonar.token=sqp_70213d5076238bc4f6ede8212afa725da7fcd5d2
+                sonar-scanner -Dsonar.projectKey=mernstackfrontend ^
+                              -Dsonar.sources=. ^
+                              -Dsonar.host.url=http://localhost:9000 ^
+                              -Dsonar.token=sqp_70213d5076238bc4f6ede8212afa725da7fcd5d2
                 '''
             }
         }
