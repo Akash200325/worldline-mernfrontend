@@ -2,73 +2,54 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'nodejs' // Configure your NodeJS installation in Jenkins
+        nodejs 'nodejs' // Assuming nodejs is installed and configured in Jenkins tool config
     }
 
     environment {
-        SONARQUBE_SERVER = 'sonarqube' // Replace with your SonarQube server configuration name
+        GIT_REPO_URL = 'https://github.com/Akash200325/worldline-mernfrontend.git'
+        BRANCH = 'main'
+        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_TOKEN = 'sqp_70213d5076238bc4f6ede8212afa725da7fcd5d2'
+        SONAR_PROJECT_KEY = 'mernstackfrontend'
     }
 
     stages {
-        stage('Cleanup') {
-            steps {
-                cleanWs()
-            }
-        }
-
         stage('Checkout') {
             steps {
-                retry(3) {
-                    git branch: 'main', 
-                        credentialsId: 'java-maven', 
-                        url: 'https://github.com/Akash200325/worldline-mernfrontend.git'
-                }
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    sh 'npm install'
-                }
+                bat 'npm install'  // Use 'bat' for Windows batch execution
             }
         }
 
         stage('Lint') {
             steps {
-                script {
-                    sh 'npm run lint'
-                }
+                bat 'npm run lint'  // Run lint using npm in Windows
             }
         }
 
         stage('Build') {
             steps {
-                script {
-                    sh 'npm run build'
-                }
+                bat 'npm run build'  // Build the project using npm in Windows
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                bat '''
-                set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                sonar-scanner -Dsonar.projectKey=mernstackfrontend ^
-                              -Dsonar.sources=. ^
-                              -Dsonar.host.url=http://localhost:9000 ^
-                              -Dsonar.token=sqp_70213d5076238bc4f6ede8212afa725da7fcd5d2
-                '''
+                bat """
+                    sonar-scanner.bat -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=. -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.token=${SONAR_TOKEN}
+                """  // Run SonarQube analysis using the provided command
             }
         }
     }
 
     post {
         always {
-            echo 'This runs regardless of the pipeline result.'
-        }
-        success {
-            echo 'Pipeline completed successfully.'
+            echo 'This will run regardless of the pipeline result.'
         }
         failure {
             echo 'Pipeline failed.'
